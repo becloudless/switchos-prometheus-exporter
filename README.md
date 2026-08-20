@@ -13,6 +13,39 @@ configuration.
 go build -o switchos-prometheus-exporter .
 ```
 
+This module depends on
+[`github.com/becloudless/switchos-client`](../switchos-client) via a
+local `replace ... => ../switchos-client` directive in `go.mod` (it's not
+a published module), so that repository must be checked out as a
+sibling directory.
+
+## Testing
+
+```sh
+go test ./...
+```
+
+Unit tests cover the config loader, per-port helper functions, and the
+Prometheus metric-emission helpers. They don't require a real device.
+
+## Docker image
+
+The `Dockerfile` builds a static binary and packages it into a small
+Alpine image. Because of the sibling-repo dependency above, the build
+needs `switchos-client` supplied as an additional Buildx build context:
+
+```sh
+docker buildx build \
+  --build-context switchos-client=../switchos-client \
+  -t switchos-prometheus-exporter .
+```
+
+The GitHub Actions workflow (`.github/workflows/ci.yml`) checks out both
+repositories, runs `go vet`/`gofmt`/`go build`/`go test` on every push
+and pull request, and - on pushes to `main` or version tags (`vX.Y.Z`) -
+builds and pushes a multi-context image to
+`ghcr.io/becloudless/switchos-prometheus-exporter`.
+
 ## Configuration
 
 Targets (device host + credentials) are read from a YAML config file

@@ -1,0 +1,4 @@
+default_username: admin
+default_password: ""
+targets:
+  - host: 192.168.88.1
